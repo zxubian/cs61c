@@ -17,6 +17,7 @@ void next_commit_id(char* commit_id);
 // Preprocessor macros capturing the maximum size of different  structures
 #define FILENAME_SIZE 512
 #define COMMIT_ID_SIZE (COMMIT_ID_BYTES+1)
+#define commit_id_size 31
 #define MSG_SIZE 512
 #define beargit_dir_length 10
 #define commit_path_length 52

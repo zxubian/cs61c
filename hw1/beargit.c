@@ -184,12 +184,12 @@ void cycleThroughLetter(char* commit_id, int letterIndex)
 	{
 		*currentLetterPos = '6';
 		letterIndex = letterIndex + 1;
-		letterIndex = letterIndex % COMMIT_ID_SIZE;
+        letterIndex = letterIndex % commit_id_size;
 		cycleThroughLetter(commit_id, letterIndex);
 	}
 }
 
-void next_commit_id(char* commit_id) {
+void next_commit_id_hw1(char* commit_id) {
   /* COMPLETE THE REST */
 	cycleThroughLetter(commit_id, 0);
 }
@@ -202,7 +202,7 @@ void move_file_to_directory(const char* filename, const char* directory)
 	fs_cp(filename, newFilePath);
 }
 
-int beargit_commit(const char* msg) {
+int beargit_commit_hw1(const char* msg) {
   if (!is_commit_msg_ok(msg)) {
     fprintf(stderr, "ERROR: Message must contain \"%s\"\n", go_bears);
     return 1;
