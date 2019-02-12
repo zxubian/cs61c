@@ -55,6 +55,21 @@ void simple_sample_test(void)
     CU_ASSERT(0==retval);
 }
 
+void test_commit_check()
+{
+	int is_commit_id;
+	is_commit_id = is_it_a_commit_id("no");
+	CU_ASSERT(0==is_commit_id);
+	is_commit_id = is_it_a_commit_id("0000000000000000000000000000000000000000");
+	CU_ASSERT(0==is_commit_id);
+	is_commit_id = is_it_a_commit_id("1111111111111111111111111111111111111111");
+	CU_ASSERT(1==is_commit_id);
+	is_commit_id = is_it_a_commit_id("61C61C61C61C61C11C6C111C6C6666C1111CCCCC");
+	CU_ASSERT(1==is_commit_id);
+	is_commit_id = is_it_a_commit_id("61C61C61C61C61C11C6C111C6C6666C1111CCCC2");
+	CU_ASSERT(0==is_commit_id);
+}
+
 struct commit {
   char msg[MSG_SIZE];
   struct commit* next;
@@ -159,6 +174,12 @@ int cunittester()
 
    /* Add tests to the Suite #1 */
    if (NULL == CU_add_test(pSuite, "Simple Test #1", simple_sample_test))
+   {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   if (NULL == CU_add_test(pSuite, "Commit ID test", test_commit_check))
    {
       CU_cleanup_registry();
       return CU_get_error();

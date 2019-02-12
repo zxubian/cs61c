@@ -10,6 +10,7 @@ int beargit_checkout(const char* arg, int new_branch);
 // Helper functions
 int get_branch_number(const char* branch_name);
 void next_commit_id(char* commit_id);
+int is_it_a_commit_id(const char* string);
 
 // Number of bytes in a commit id
 #define COMMIT_ID_BYTES 40
