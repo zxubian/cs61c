@@ -18,10 +18,10 @@ int is_it_a_commit_id(const char* string);
 // Preprocessor macros capturing the maximum size of different  structures
 #define FILENAME_SIZE 512
 #define COMMIT_ID_SIZE (COMMIT_ID_BYTES+1)
-#define commit_id_size 31
+#define commit_id_bytes 30
 #define MSG_SIZE 512
-#define beargit_dir_length 10
-#define commit_path_length 52
-#define commit_beargit_length 62
+#define beargit_dir_length 11
+#define commit_path_length (beargit_dir_length + COMMIT_ID_SIZE + 1)
+#define commit_beargit_length (beargit_dir_length + commit_path_length + beargit_dir_length - 1) 
 #define BRANCHNAME_SIZE 128
 #define COMMIT_ID_BRANCH_BYTES 10

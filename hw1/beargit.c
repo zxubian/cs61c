@@ -37,7 +37,7 @@
  * - None if successful
  */
 
-const char zero_commit[COMMIT_ID_BYTES] = "0000000000000000000000000000000000000000";
+const char* zero_commit = "0000000000000000000000000000000000000000";
 
 int beargit_init(void) {
 	fs_mkdir(".beargit");
@@ -176,7 +176,10 @@ void cycleThroughLetter(char* commit_id, int letterIndex)
 	char currentLetter = *currentLetterPos;
     if(currentLetter == '0')
     {
-      *currentLetterPos = '6';
+		*currentLetterPos = '6';
+		letterIndex = letterIndex + 1;
+		letterIndex = letterIndex % commit_id_bytes;
+		cycleThroughLetter(commit_id, letterIndex);
     }
 	if(currentLetter == '6')
 	{
@@ -190,7 +193,7 @@ void cycleThroughLetter(char* commit_id, int letterIndex)
 	{
 		*currentLetterPos = '6';
 		letterIndex = letterIndex + 1;
-		letterIndex = letterIndex % commit_id_size;
+		letterIndex = letterIndex % commit_id_bytes;
 		cycleThroughLetter(commit_id, letterIndex);
 	}
 }
@@ -201,10 +204,10 @@ void next_commit_id_hw1(char* commit_id) {
 }
 const char* beargit_dir = ".beargit/";
 
-void move_file_to_directory(const char* filename, const char* directory)
+void copy_file_to_directory(const char* filename, const char* directory)
 {
 	char newFilePath[commit_path_length + FILENAME_SIZE];
-	sprintf(newFilePath, "%s%s", directory, filename);
+	sprintf(newFilePath, "%s/%s", directory, filename);
 	fs_cp(filename, newFilePath);
 }
 
@@ -217,28 +220,27 @@ int beargit_commit_hw1(const char* msg) {
 	char commit_id[COMMIT_ID_SIZE];
 	read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
 	next_commit_id(commit_id);
-
 	/* COMPLETE THE REST */
-	char commitPath[commit_path_length]; 
-	sprintf(commitPath, "%s%s/", beargit_dir, commit_id);
-	fs_mkdir(commitPath);
-	char dirString [commit_beargit_length];
-	sprintf(dirString, "%s.beargit", commitPath);
-	fs_mkdir(dirString);
-	char file[FILENAME_SIZE];
-	FILE* findex = fopen(".beargit/.index", "r");
-	while(fgets(file, sizeof(file), findex))
-	{
-		strtok(file, "\n");
-		move_file_to_directory(file, commitPath);
-	} 
-	fclose(findex);
-	move_file_to_directory(".beargit/.index", commitPath);
-	move_file_to_directory(".beargit/.prev", commitPath);
-	write_string_to_file(".msg", msg);
-	move_file_to_directory(".msg", commitPath);
-	write_string_to_file(".beargit/.prev", commit_id);
-	return 0;
+    char commit_path[commit_path_length] = ".beargit/"; 
+    sprintf(commit_path, "%s%s/", beargit_dir, commit_id);
+    fs_mkdir(commit_path);
+    char dirString [commit_beargit_length];
+    sprintf(dirString, "%s.beargit", commit_path);
+    fs_mkdir(dirString);
+    char file[FILENAME_SIZE];
+    FILE* findex = fopen(".beargit/.index", "r");
+    while(fgets(file, sizeof(file), findex))
+    {
+      strtok(file, "\n");
+      copy_file_to_directory(file, commit_path);
+    } 
+    fclose(findex);
+    copy_file_to_directory(".beargit/.index", commit_path);
+    copy_file_to_directory(".beargit/.prev", commit_path);
+    write_string_to_file(".msg", msg);
+    copy_file_to_directory(".msg", commit_path);
+    write_string_to_file(".beargit/.prev", commit_id);
+    return 0;
 }
 
 /* beargit status
@@ -263,9 +265,6 @@ int beargit_status() {
 /* beargit log
  *
  * See "Step 4" in the homework 1 spec.
- *
- *
- *
  */
 
 void print_log(const char* commit_id, const char* message)
@@ -426,23 +425,30 @@ int beargit_branch() {
  *
  */
 
-int remove_files()
+void remove_files()
 {
 	FILE* findex = fopen(".beargit/.index", "r");
-    char line[FILENAME_SIZE];
-    char file[FILENAME_SIZE + 10] = ".beargit/";
-    while (fgets(line, sizeof(line), findex))
+    char file[FILENAME_SIZE];
+    while (fgets(file, sizeof(file), findex))
     {
-      strtok(line, "\n");
-      strcat(file, line);
+      strtok(file, "\n");
       fs_rm(file);
     }
 	fclose(findex);
 }
 
+void copy_commit_index(const char* commit_id)
+{
+  char commit_index[commit_beargit_length + 6];
+  const char* index_path = ".beargit/.index";
+  sprintf(commit_index, ".beargit/%s/.index", commit_id);
+  fs_cp(commit_index, index_path);
+}
+
 int checkout_commit(const char* commit_id) {
 	/* COMPLETE THE REST */
   remove_files();
+  copy_commit_index(commit_id);
   return 0;
 }
 
