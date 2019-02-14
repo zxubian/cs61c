@@ -441,7 +441,7 @@ void copy_commit_index(const char* commit_id)
 {
   char commit_index[commit_beargit_length + 6];
   const char* index_path = ".beargit/.index";
-  sprintf(commit_index, ".beargit/%s/.index", commit_id);
+  sprintf(commit_index, ".beargit/%s/%s.index", commit_id, beargit_dir);
   fs_cp(commit_index, index_path);
 }
 
