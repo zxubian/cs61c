@@ -395,25 +395,28 @@ int beargit_branch() {
 	load_current(current_branch, &on_branch);
 	char line[BRANCHNAME_SIZE];
 	int line_count = 0;
+    fpos_t pos;
+    fgetpos(fbranches, &pos);
 	while(fgets(line, sizeof(line), fbranches))
 	{
-		++line_count;
+      ++line_count;
 	}
 	while(line_count > 0)
 	{
-		fseek(fbranches, -BRANCHNAME_SIZE, SEEK_CUR);
-		fgets(line, sizeof(line), fbranches);
-		strtok(line, "\n");
-		if(on_branch)
-		{
-			if(strcmp(line, current_branch) == 0)
-			{
-              strcat(line, star); 
-			}
-            strcat(line, "\n");
-            printf("%s", line);
-		}
-		--line_count;
+      fsetpos(fbranches, &pos);
+      fseek(fbranches, BRANCHNAME_SIZE * (line_count -1), SEEK_SET);
+      fgets(line, sizeof(line), fbranches);
+      strtok(line, "\n");
+      if(on_branch)
+      {
+        if(strcmp(line, current_branch) == 0)
+        {
+          strcat(line, star); 
+        }
+        strcat(line, "\n");
+        printf("%s", line);
+      }
+      --line_count;
 	}
 	fclose(fbranches);
 	return 0;
@@ -445,10 +448,38 @@ void copy_commit_index(const char* commit_id)
   fs_cp(commit_index, index_path);
 }
 
+void copy_files_from_index(const char* commit_id)
+{
+  char commit_filename[commit_path_length + FILENAME_SIZE] = ".beargit/";
+  FILE* findex = fopen(".beargit/.index", "r");
+  char file[FILENAME_SIZE];
+  while (fgets(file, sizeof(file), findex))
+  {
+    strtok(file, "\n");
+    sprintf(commit_filename, ".beargit/%s/%s", commit_id, file);
+    fs_cp(commit_filename, file);
+  }
+  fclose(findex);
+}
+
+void write_commitid_to_prev(const char* commit_id)
+{
+	write_string_to_file(".beargit/.prev", commit_id);
+}
+
 int checkout_commit(const char* commit_id) {
 	/* COMPLETE THE REST */
   remove_files();
-  copy_commit_index(commit_id);
+  write_commitid_to_prev(commit_id);
+  if(strcmp(commit_id, zero_commit) == 0)
+  {
+    write_string_to_file(".beargit/.index", "");
+  }
+  else
+  {
+    copy_commit_index(commit_id);
+    copy_files_from_index(commit_id);
+  }
   return 0;
 }
 
